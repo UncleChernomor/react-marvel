@@ -1,20 +1,15 @@
-class MarvelService {
-    #apiUrl;
-    #apiKey;
-    #slug;
-    
+import {useHttp} from "../hooks/http.hook";
 
-    constructor(
-        apiUrl = 'https://gateway.marvel.com:443/v1/public/',
-        apiKey = 'apikey=8fb523c96bd8bd56d48b2de659931ac6'
-    ) {
-        this.#apiUrl =  apiUrl ?? 'https://gateway.marvel.com:443/v1/public/';
-        this.#apiKey = apiKey ?? '?apikey=8fb523c96bd8bd56d48b2de659931ac6';
-    }
+export const useMarvelService = () => {
+    const {data, loading, error, request, clearError} = useHttp();
 
-    getData = async (url) => {
+    const apiUrl = 'https://gateway.marvel.com:443/v1/public/';
+    const apiKey = 'apikey=8fb523c96bd8bd56d48b2de659931ac6';
+    let slug = '';
+
+    const getData = async (url) => {
         try {
-            const response = await fetch(url);
+            const response = await request(url);
 
             if (!response.ok) {
                 throw new Error(`Failed to execute request on path ${url}`);
@@ -28,34 +23,35 @@ class MarvelService {
         }
     }
 
-    getAllCharacters = async () => {
-        this.#slug = `characters?`;
+    const getAllCharacters = async () => {
+        slug = `characters?`;
 
-        const result = await this.getData(`${this.#apiUrl}${this.#slug}${this.#apiKey}`);
+        const result = await request(`${apiUrl}${slug}${apiKey}`);
 
-        return result.data.results.map(this.#transformCharacter);
+        return result.data.results.map(transformCharacter);
     }
 
-    getCharacter = async (id) => {
+    const getCharacter = async (id) => {
         const currentId = id ?? '1011334';
 
-        this.#slug = `characters/${currentId}?`;
-        const result = await this.getData(`${this.#apiUrl}${this.#slug}${this.#apiKey}`)
+        slug = `characters/${currentId}?`;
 
-        return this.#transformCharacter(result.data.results[0]);
+        const result = await request(`${apiUrl}${slug}${apiKey}`);
+
+        return transformCharacter(result.data.results[0]);
     }
 
-    getCharacterListByCount = async (count, offset) => {
+    const getCharacterListByCount = async (count = 9, offset = 0) => {
 
-        this.#slug = `characters?limit=${count}&`;
-        this.#slug = offset ? `${this.#slug}offset=${offset}&` : this.#slug;
+        slug = `characters?limit=${count}&`;
+        slug = offset ? `${slug}offset=${offset}&` : slug;
 
-        const result = await this.getData(`${this.#apiUrl}${this.#slug}${this.#apiKey}`)
+        const result = await request(`${apiUrl}${slug}${apiKey}`)
 
-        return  result.data.results.map((item) => this.#transformCharacter(item, result.data.total));
+        return result.data.results.map((item) => transformCharacter(item, result.data.total));
     }
 
-    #transformCharacter =  (character, total) => {
+    const transformCharacter = (character, total) => {
 
         return {
             total,
@@ -69,6 +65,28 @@ class MarvelService {
         };
     };
 
+    const getComicListByCount = async (count = 8, offset = 0) => {
+        slug = `comics?limit=${count}&`;
+        slug = offset ? `${slug}offset=${offset}&` : slug;
+
+        const result = await request(`${apiUrl}${slug}${apiKey}`);
+
+        return result.data.results.map((item) => transformComic(item, result.data.total));
+    };
+
+    const transformComic = (comic, total) => {
+        return {
+          total,
+          id: comic.id,
+          title: comic.title,
+          price: comic.prices[0].price,
+          url: comic.urls[0].url,
+          thumbnail: `${comic.thumbnail.path}.${comic.thumbnail.extension}`,
+        };
+    };
+
+
+    return {data, loading, error, getCharacter, getData, getCharacterListByCount, clearError, getComicListByCount};
 }
 
-export default MarvelService;
+export default useMarvelService;

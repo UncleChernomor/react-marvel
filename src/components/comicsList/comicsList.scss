@@ -1,6 +1,7 @@
 .comics {
     &__list {
-        margin-top: 45px;
+        margin: 45px auto 0;
+        text-align: center;
     }
     &__grid {
         display: grid;
@@ -31,6 +32,12 @@
         }
         &:hover {
             transform: translateY(-5px);
+        }
+    }
+    
+    @media (max-width: 1280px) {
+        &__grid {
+            grid-template-columns: repeat(3, minmax(225px, 1fr));
         }
     }
 }

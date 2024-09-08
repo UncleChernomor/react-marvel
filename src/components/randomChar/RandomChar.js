@@ -1,108 +1,68 @@
-import { Component } from 'react';
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
+import {useEffect, useState} from "react";
 
 
-class RandomChar extends Component {
+const RandomChar = () => {
+    const [character, setCharacter] = useState(null);
 
-    state = {};
-    minId = 1011000;
-    maxId = 1011400;
-    timerId = null;
-    timerInterval = 5000;
+    const minId = 1011000;
+    const maxId = 1011400;
 
-    marvelService = new MarvelService();
+    const {data, error, loading, getCharacter, clearError} =  useMarvelService();
 
-    constructor(props) {
-        super(props);
+    useEffect(() => {
+        updateData();
+    }, []);
 
-        this.state = {
-            character: {},
-            loading: true,
-        };
-        
+    const updateData = async () => {
+        if(error) { clearError(); }
+        const id = Math.floor(Math.random() * (maxId - minId) + minId);
+        getCharacter(id)
+            .then(onCharacterLoaded);
     }
 
-    componentDidMount = () => {
-        this.updateData();
-        // this.timerId = setInterval(() => {
-        //     this.updateData();
-        // }, this.timerInterval);
+    const onCharacterLoaded = (character) => {
+        setCharacter(character);
     }
 
-    componentWillUnmount = () => {
-        // clearInterval(this.timerId);
+    const onTryIt = () => {
+        updateData();
     }
 
-    updateData = async () => {
-        const id = Math.floor(Math.random() * (this.maxId - this.minId) + this.minId);
-        this.marvelService.getCharacter(id)
-        .then(this.onCharacterLoaded)
-        .catch(this.onError);  
-    }
+    const spinner = loading ? <Spinner/> : null;
+    const errorMessage = error ? <ErrorMessage/> : null;
+    const view = !(loading || error) ? <View character={character}/> : null;
 
-    onCharacterLoaded = (character) => {
-        this.setState({
-            character,
-            loading: false,
-        });
-    }
-
-    onCharacterLoading = () => {
-        this.setState({
-            loading: true,
-        });
-    }
-
-    onError = (error) => {
-        this.setState({
-            error: true,
-        })
-    }
-
-    onTryIt = () => {
-        this.onCharacterLoading();
-        this.updateData();
-        // clearInterval(this.timerId);
-        // this.timerId = setInterval(this.updateData, this.timerInterval);
-    }
-
-    render = () => {
-        const { character, loading, error } = this.state;
-
-        const spinner = loading ? <Spinner /> : null;
-        const errorMessage = error ? <ErrorMessage /> : null;
-        const view = !(loading || error) ? <View character={character} /> : null;
-
-        return (
-            <div className="randomchar">
-                {spinner}
-                {errorMessage}
-                {view}
-                <div className="randomchar__static">
-                    <p className="randomchar__title">
-                        Random character for today!<br />
-                        Do you want to get to know him better?
-                    </p>
-                    <p className="randomchar__title">
-                        Or choose another one
-                    </p>
-                    <button className="button button__main" onClick={this.onTryIt}>
-                        <div className="inner">try it</div>
-                    </button>
-                    <img src={mjolnir} alt="mjolnir" className="randomchar__decoration" />
-                </div>
+    return (
+        <div className="randomchar">
+            {spinner}
+            {errorMessage}
+            {view}
+            <div className="randomchar__static">
+                <p className="randomchar__title">
+                    Random character for today!<br/>
+                    Do you want to get to know him better?
+                </p>
+                <p className="randomchar__title">
+                    Or choose another one
+                </p>
+                <button className="button button__main" onClick={onTryIt}>
+                    <div className="inner">try it</div>
+                </button>
+                <img src={mjolnir} alt="mjolnir" className="randomchar__decoration"/>
             </div>
-        )
-    }
+        </div>
+    )
 }
 
 const View = (props) => {
+
     const {name, thumbnail, home, wiki, description} = props.character;
     const imageNotFound = /image_not_available/.test(thumbnail);
     const imageStyle = {
@@ -113,7 +73,7 @@ const View = (props) => {
 
     return (
         <div className="randomchar__block">
-            <img src={thumbnail} alt={name} className="randomchar__img" style={imageStyle} />
+            <img src={thumbnail} alt={name} className="randomchar__img" style={imageStyle}/>
             <div className="randomchar__info">
                 <p className="randomchar__name">{name}</p>
                 <p className="randomchar__descr">
