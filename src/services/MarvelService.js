@@ -74,19 +74,44 @@ export const useMarvelService = () => {
         return result.data.results.map((item) => transformComic(item, result.data.total));
     };
 
+    const getComicById = async (id = 0) => {
+        if (!id) {
+            throw Error('Undefined ID');
+        }
+        slug = `comics/${id}?`;
+
+        const result = await request(`${apiUrl}${slug}${apiKey}`);
+
+        return transformComic(result.data.results[0], result.data.total);
+    }
+
     const transformComic = (comic, total) => {
+        console.log('comic: ', comic);
         return {
-          total,
-          id: comic.id,
-          title: comic.title,
-          price: comic.prices[0].price,
-          url: comic.urls[0].url,
-          thumbnail: `${comic.thumbnail.path}.${comic.thumbnail.extension}`,
+            total,
+            id: comic.id,
+            title: comic.title,
+            price: comic.prices[0].price,
+            url: comic.urls[0].url,
+            thumbnail: `${comic.thumbnail.path}.${comic.thumbnail.extension}`,
+            pageCount: comic.pageCount,
+            description: comic.description,
+            lang: 'en',
         };
     };
 
 
-    return {data, loading, error, getCharacter, getData, getCharacterListByCount, clearError, getComicListByCount};
+    return {
+        data,
+        loading,
+        error,
+        clearError,
+        getCharacter,
+        getData,
+        getCharacterListByCount,
+        getComicListByCount,
+        getComicById
+    };
 }
 
 export default useMarvelService;

@@ -4,21 +4,24 @@ import useMarvelService from "../../services/MarvelService";
 import {useEffect, useState} from "react";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
+import {Link} from "react-router-dom";
 
-// function mergeComics(oldComics, newComics) {
-//     const idMap = new Map(oldComics.map(comic => [comic.id, comic]));
-//
-//     console.log('old: ', oldComics);
-//     console.log('new: ', newComics);
-//
-//     newComics.forEach(comic => {
-//         if (!idMap.has(comic.id)) {
-//             idMap.set(comic.id, comic);
-//         }
-//     });
-//
-//     return Array.from(idMap.values());
-// }
+function mergeComics(oldComics, newComics) {
+    const idMap = new Map(oldComics.map(comic => [comic.id, comic]));
+
+    console.log('old: ', oldComics);
+    console.log('new: ', newComics);
+
+    newComics.forEach(comic => {
+        if (!idMap.has(comic.id)) {
+            idMap.set(comic.id, comic);
+        }
+    });
+
+    console.log('result: ', Array.from(idMap.values()));
+
+    return Array.from(idMap.values());
+}
 
 const ComicsList = () => {
     const [comics, setComics] = useState([]);
@@ -32,26 +35,22 @@ const ComicsList = () => {
     const loadMore = () => {
         setLoadingMore(true);
         clearError();
-        getComicListByCount(4, comics.length)
+        getComicListByCount(8, comics.length)
             .then((result) => {
-                // setComics(mergeComics([comics], [result]));
-                setComics([...comics, ...result]);
+                setComics(mergeComics(comics, result));
             })
             .catch((error) => console.log(error))
             .finally(() => setLoadingMore(false));
     };
 
     useEffect(() => {
-        updateList();
-    }, []);
+            updateList();
+        }, []);
 
     const comicsView = loadMore || (!loading && !error) ? <ComicsView comics={comics}/> : null;
     const spinner = loading && !loadingMore ? <Spinner/> : null;
     const errorMessage = error ? <ErrorMessage/> : null;
     const classesLoadMore = loadingMore ? 'inner go-spinner' : 'inner';
-
-    console.log('hi render');
-
 
     return (
         <div className="comics__list">
@@ -79,11 +78,11 @@ const ComicsView = (props) => {
                 comics.map((item) => {
                     return (
                         <li className="comics__item" key={item.id}>
-                            <a href={item.url}>
+                            <Link to={`/comics/${item.id}`}>
                                 <img src={item.thumbnail} alt={item.title} className="comics__item-img"/>
                                 <div className="comics__item-name">{item.title}</div>
                                 <div className="comics__item-price">{item.price}$</div>
-                            </a>
+                            </Link>
                         </li>
                     );
                 })
