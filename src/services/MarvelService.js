@@ -41,6 +41,17 @@ export const useMarvelService = () => {
         return transformCharacter(result.data.results[0]);
     }
 
+    const getCharacterByName = async (name) => {
+        if (name.length < 3) {
+            throw Error('Length of name is less then 3');
+        }
+            slug = `characters?name=${name}&`;
+            const result = await request(`${apiUrl}${slug}${apiKey}`);
+            const character = result.data.results;
+
+        return transformCharacter(character[0], result.data.total);
+
+    }
     const getCharacterListByCount = async (count = 9, offset = 0) => {
 
         slug = `characters?limit=${count}&`;
@@ -52,6 +63,12 @@ export const useMarvelService = () => {
     }
 
     const transformCharacter = (character, total) => {
+        if(!character) {
+            return {
+                total,
+                id: 0,
+            }
+        }
 
         return {
             total,
@@ -110,7 +127,8 @@ export const useMarvelService = () => {
         getData,
         getCharacterListByCount,
         getComicListByCount,
-        getComicById
+        getComicById,
+        getCharacterByName,
     };
 }
 

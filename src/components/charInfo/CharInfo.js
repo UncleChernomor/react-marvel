@@ -2,10 +2,11 @@ import './charInfo.scss';
 
 import {useEffect, useState} from "react";
 
-import MarvelService, {useMarvelService} from '../../services/MarvelService';
+import {useMarvelService} from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import Skeleton from '../skeleton/Skeleton';
+import SearchChar from "../searchChar/SearchChar";
 
 const CharInfo = (props) => {
 
@@ -50,12 +51,16 @@ const CharInfo = (props) => {
     const errorMessage = error ? <ErrorMessage/> : null;
 
     return (
-        <div className="char__info">
-            {skeleton}
-            {spinner}
-            {errorMessage}
-            {unionView}
+        <div className="right-sidebar">
+            <div className="char__info">
+                {skeleton}
+                {spinner}
+                {errorMessage}
+                {unionView}
+            </div>
+            <SearchChar classes="char__info" />
         </div>
+
     )
 }
 

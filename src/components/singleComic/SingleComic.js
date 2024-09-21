@@ -14,7 +14,6 @@ const SingleComic = () => {
     const updateComic = () => {
         clearError();
         getComicById(id).then(result => {
-            console.log(result);
             setComic(result);
         });
     }
